@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mikado Social Juice — Order Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF8EE;
+    --ink:#1F3D2B;
+    --citrus:#E0572B;
+    --citrus-dark:#C2461F;
+    --mango:#F2B632;
+    --berry:#7A1F3D;
+    --surface:#FFFFFF;
+    --line:#E8DFC9;
+    --ink-soft:#5C6F60;
+    --shadow: 0 2px 0 rgba(31,61,43,0.06), 0 8px 24px -12px rgba(31,61,43,0.18);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    background-image:
+      radial-gradient(circle at 92% 4%, rgba(242,182,50,0.18), transparent 40%),
+      radial-gradient(circle at 4% 96%, rgba(224,87,43,0.10), transparent 45%);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* ---- Header / brand strip ---- */
+  .brand{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+    margin-bottom:28px;
+  }
+  .brand-mark{display:flex;align-items:center;gap:14px;}
+  .citrus-badge{
+    width:52px;height:52px;border-radius:50%;
+    background:conic-gradient(from 90deg, var(--mango), var(--citrus) 40%, var(--mango) 80%, var(--citrus));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow);
+    flex:none;
+    position:relative;
+  }
+  .citrus-badge::before{
+    content:"";
+    position:absolute;inset:6px;
+    border-radius:50%;
+    background:var(--cream);
+  }
+  .citrus-badge::after{
+    content:"✦";
+    position:relative;
+    color:var(--citrus-dark);
+    font-size:18px;
+  }
+  .brand-text h1{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:28px;
+    margin:0;
+    letter-spacing:-0.01em;
+    line-height:1;
+  }
+  .brand-text p{
+    margin:4px 0 0;
+    font-size:13px;
+    color:var(--ink-soft);
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+  .date-pill{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:8px 16px;
+    color:var(--ink-soft);
+    box-shadow:var(--shadow);
+  }
+  .date-pill strong{color:var(--ink);font-weight:700;}
+
+  /* ---- Tally strip (signature element) ---- */
+  .tally{
+    background:var(--ink);
+    border-radius:18px;
+    padding:18px 22px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+    box-shadow:var(--shadow);
+    margin-bottom:26px;
+    position:relative;
+    overflow:hidden;
+  }
+  .tally::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;height:4px;
+    background:repeating-linear-gradient(90deg, var(--mango) 0 14px, var(--citrus) 14px 28px);
+    opacity:0.9;
+  }
+  .tally-item{display:flex;flex-direction:column;gap:4px;}
+  .tally-label{
+    font-size:11px;text-transform:uppercase;letter-spacing:0.09em;
+    color:rgba(255,248,238,0.55);font-weight:600;
+  }
+  .tally-value{
+    font-family:'JetBrains Mono',monospace;
+    font-size:24px;font-weight:700;
+    color:var(--cream);
+    line-height:1.1;
+  }
+  .tally-value.citrus{color:var(--mango);}
+  .tally-sub{font-size:11px;color:rgba(255,248,238,0.45);font-family:'JetBrains Mono',monospace;}
+  @media (max-width:700px){
+    .tally{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* ---- Layout grid ---- */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1.4fr;
+    gap:22px;
+    align-items:start;
+  }
+  @media (max-width:860px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  .card{
+    background:var(--surface);
+    border-radius:18px;
+    border:1px solid var(--line);
+    box-shadow:var(--shadow);
+    padding:22px;
+  }
+  .card h2{
+    font-family:'Fraunces',serif;
+    font-size:19px;font-weight:600;
+    margin:0 0 4px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card .hint{
+    font-size:12.5px;color:var(--ink-soft);margin:0 0 18px;
+  }
+  .slice{
+    display:inline-block;width:9px;height:9px;border-radius:0 60% 0 60%;
+    background:var(--citrus);
+    transform:rotate(45deg);
+  }
+
+  /* ---- Form ---- */
+  label{
+    display:block;font-size:12px;font-weight:700;text-transform:uppercase;
+    letter-spacing:0.04em;color:var(--ink-soft);margin-bottom:6px;margin-top:16px;
+  }
+  label:first-of-type{margin-top:0;}
+  input,select,textarea{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    padding:11px 12px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:#FFFDF8;
+    color:var(--ink);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input:focus,select:focus,textarea:focus{
+    outline:none;
+    border-color:var(--citrus);
+    box-shadow:0 0 0 3px rgba(224,87,43,0.14);
+  }
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+  .menu-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;
+  }
+  .menu-chip{
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:9px 10px;
+    font-size:13px;font-weight:600;
+    background:#FFFDF8;
+    cursor:pointer;
+    display:flex;justify-content:space-between;align-items:center;
+    transition:border-color .15s, background .15s;
+    user-select:none;
+  }
+  .menu-chip:hover{border-color:var(--mango);}
+  .menu-chip.active{
+    border-color:var(--citrus);
+    background:rgba(224,87,43,0.08);
+    color:var(--citrus-dark);
+  }
+  .menu-chip span.price{font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--ink-soft);font-size:12px;}
+  .menu-chip.active span.price{color:var(--citrus-dark);}
+
+  .qty-row{display:flex;align-items:center;gap:10px;margin-top:8px;}
+  .qty-btn{
+    width:34px;height:34px;border-radius:9px;border:1.5px solid var(--line);
+    background:#FFFDF8;font-size:16px;font-weight:700;cursor:pointer;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .qty-btn:hover{border-color:var(--citrus);color:var(--citrus-dark);}
+  .qty-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;min-width:28px;text-align:center;}
+
+  .cart{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px;}
+  .cart-empty{font-size:13px;color:var(--ink-soft);font-style:italic;}
+  .cart-line{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:13.5px;padding:6px 0;
+  }
+  .cart-line .name{font-weight:600;}
+  .cart-line .meta{color:var(--ink-soft);font-size:12px;font-family:'JetBrains Mono',monospace;}
+  .cart-remove{
+    background:none;border:none;color:var(--berry);font-size:12px;cursor:pointer;
+    font-weight:600;padding:2px 6px;
+  }
+  .cart-total{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-top:10px;padding-top:10px;border-top:1.5px solid var(--ink);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .cart-total .lbl{font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);font-weight:600;}
+  .cart-total .amt{font-size:22px;font-weight:700;color:var(--ink);}
+
+  .pay-modes{display:flex;gap:8px;margin-top:8px;}
+  .pay-btn{
+    flex:1;padding:10px 8px;border-radius:10px;border:1.5px solid var(--line);
+    background:#FFFDF8;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink-soft);
+    text-align:center;
+  }
+  .pay-btn.active[data-mode="Cash"]{border-color:var(--mango);background:rgba(242,182,50,0.16);color:#8A6500;}
+  .pay-btn.active[data-mode="UPI"]{border-color:var(--berry);background:rgba(122,31,61,0.08);color:var(--berry);}
+  .pay-btn.active[data-mode="Card"]{border-color:var(--citrus);background:rgba(224,87,43,0.08);color:var(--citrus-dark);}
+
+  .submit-btn{
+    width:100%;margin-top:18px;
+    background:var(--citrus);color:#fff;
+    border:none;border-radius:12px;
+    padding:14px;font-size:15px;font-weight:700;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    box-shadow:0 6px 16px -6px rgba(224,87,43,0.55);
+    transition:background .15s, transform .1s;
+  }
+  .submit-btn:hover{background:var(--citrus-dark);}
+  .submit-btn:active{transform:scale(0.98);}
+  .submit-btn:disabled{background:#D8CFC0;cursor:not-allowed;box-shadow:none;}
+
+  .error-msg{
+    font-size:12.5px;color:var(--berry);font-weight:600;margin-top:8px;
+    display:none;
+  }
+  .error-msg.show{display:block;}
+
+  /* ---- Ledger ---- */
+  .ledger-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  .filters{display:flex;gap:6px;}
+  .filter-btn{
+    border:1.5px solid var(--line);background:#FFFDF8;border-radius:100px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-soft);
+  }
+  .filter-btn.active{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+
+  .ledger-list{margin-top:14px;display:flex;flex-direction:column;gap:10px;max-height:560px;overflow-y:auto;padding-right:4px;}
+  .ledger-list::-webkit-scrollbar{width:6px;}
+  .ledger-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;}
+
+  .order-card{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    background:#FFFDF8;
+    position:relative;
+  }
+  .order-card::before{
+    content:"";
+    position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:3px;
+    background:var(--citrus);
+  }
+  .order-card[data-mode="UPI"]::before{background:var(--berry);}
+  .order-card[data-mode="Card"]::before{background:var(--mango);}
+
+  .order-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .order-id{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:0.04em;
+  }
+  .order-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);}
+  .order-customer{font-weight:700;font-size:14.5px;margin-top:2px;}
+  .order-items{font-size:13px;color:var(--ink-soft);margin-top:4px;line-height:1.5;}
+  .order-bottom{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-top:10px;
+  }
+  .order-amt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;}
+  .order-tags{display:flex;gap:6px;align-items:center;}
+  .tag{
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;
+    padding:3px 8px;border-radius:100px;
+  }
+  .tag.mode-Cash{background:rgba(242,182,50,0.2);color:#8A6500;}
+  .tag.mode-UPI{background:rgba(122,31,61,0.12);color:var(--berry);}
+  .tag.mode-Card{background:rgba(224,87,43,0.12);color:var(--citrus-dark);}
+  .tag.status-Paid{background:rgba(31,61,43,0.1);color:var(--ink);}
+  .tag.status-Pending{background:rgba(224,87,43,0.14);color:var(--citrus-dark);}
+  .order-actions{display:flex;gap:6px;}
+  .icon-btn{
+    background:none;border:1px solid var(--line);border-radius:8px;
+    width:28px;height:28px;cursor:pointer;font-size:13px;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);
+  }
+  .icon-btn:hover{border-color:var(--berry);color:var(--berry);}
+  .icon-btn.toggle-pay:hover{border-color:var(--ink);color:var(--ink);}
+
+  .empty-state{
+    text-align:center;padding:50px 20px;color:var(--ink-soft);
+  }
+  .empty-state .slice-big{
+    width:40px;height:40px;border-radius:0 60% 0 60%;
+    background:linear-gradient(135deg, var(--mango), var(--citrus));
+    margin:0 auto 14px;transform:rotate(45deg);
+  }
+  .empty-state p{font-size:13.5px;margin:0;}
+
+  .menu-manager{margin-top:18px;}
+  .menu-manager summary{
+    cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+    list-style:none;display:flex;align-items:center;gap:6px;
+  }
+  .menu-manager summary::-webkit-details-marker{display:none;}
+  .menu-manager summary::before{content:"▸";font-size:10px;}
+  .menu-manager[open] summary::before{content:"▾";}
+  .menu-manager-body{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+  .menu-edit-row{display:grid;grid-template-columns:1fr 80px 32px;gap:6px;align-items:center;}
+  .menu-edit-row input{padding:7px 9px;font-size:13px;}
+  .menu-edit-row .icon-btn{flex:none;}
+  .add-item-row{display:grid;grid-template-columns:1fr 80px 32px;gap:6px;margin-top:6px;}
+
+  .toolbar-bottom{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-top:18px;flex-wrap:wrap;gap:10px;
+  }
+  .ghost-btn{
+    background:none;border:1.5px solid var(--line);border-radius:10px;
+    padding:9px 14px;font-size:12.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;
+  }
+  .ghost-btn:hover{border-color:var(--ink);color:var(--ink);}
+  .ghost-btn.danger:hover{border-color:var(--berry);color:var(--berry);}
+
+  footer{
+    text-align:center;margin-top:36px;font-size:12px;color:var(--ink-soft);
+  }
+  footer .slice{margin:0 6px;vertical-align:middle;}
+
+  @media (prefers-reduced-motion:no-preference){
+    .order-card{animation:slideIn .25s ease-out;}
+  }
+  @keyframes slideIn{
+    from{opacity:0;transform:translateY(-6px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--cream);padding:12px 20px;border-radius:12px;
+    font-size:13.5px;font-weight:600;box-shadow:0 10px 30px -10px rgba(0,0,0,0.4);
+    opacity:0;transition:opacity .2s, transform .2s;pointer-events:none;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ---- Sync status ---- */
+  .sync-pill{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    display:flex;align-items:center;gap:6px;
+    background:var(--surface);border:1px solid var(--line);border-radius:100px;
+    padding:6px 12px;color:var(--ink-soft);cursor:pointer;
+    box-shadow:var(--shadow);
+  }
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:#B8B0A0;flex:none;}
+  .sync-pill.online .sync-dot{background:#3E8E5A;}
+  .sync-pill.offline .sync-dot{background:var(--citrus);}
+  .sync-pill.error .sync-dot{background:var(--berry);}
+
+  /* ---- Setup modal ---- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(31,61,43,0.45);
+    display:flex;align-items:center;justify-content:center;
+    z-index:100;padding:20px;
+  }
+  .modal-overlay.hidden{display:none;}
+  .modal{
+    background:var(--surface);border-radius:18px;max-width:520px;width:100%;
+    padding:28px;box-shadow:0 20px 60px -10px rgba(0,0,0,0.3);
+    max-height:90vh;overflow-y:auto;
+  }
+  .modal h2{font-family:'Fraunces',serif;font-size:21px;margin:0 0 6px;}
+  .modal p{font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 14px;}
+  .modal ol{font-size:13.5px;color:var(--ink-soft);line-height:1.7;padding-left:20px;margin:0 0 16px;}
+  .modal textarea{
+    width:100%;min-height:130px;font-family:'JetBrains Mono',monospace;font-size:12.5px;
+    padding:12px;border:1.5px solid var(--line);border-radius:10px;background:#FFFDF8;
+    resize:vertical;
+  }
+  .modal .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .modal .link{color:var(--citrus-dark);text-decoration:underline;font-weight:600;}
+  .pin-input{
+    text-align:center;font-size:22px;letter-spacing:6px;font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+  }
+  .modal-tab-row{display:flex;gap:8px;margin-bottom:16px;}
+  .modal-tab{
+    flex:1;text-align:center;padding:8px;border-radius:8px;border:1.5px solid var(--line);
+    font-size:12.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;background:#FFFDF8;
+  }
+  .modal-tab.active{border-color:var(--citrus);background:rgba(224,87,43,0.08);color:var(--citrus-dark);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <div class="brand-mark">
+      <div class="citrus-badge"></div>
+      <div class="brand-text">
+        <h1>Mikado Social Juice</h1>
+        <p>Daily Order &amp; Payment Tracker</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div class="date-pill">📅 <strong id="todayLabel"></strong></div>
+      <div class="sync-pill offline" id="syncPill" title="Click to manage cloud sync">
+        <span class="sync-dot"></span>
+        <span id="syncLabel">Local only</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tally">
+    <div class="tally-item">
+      <span class="tally-label">Today's revenue</span>
+      <span class="tally-value citrus" id="tallyRevenue">₹0</span>
+      <span class="tally-sub" id="tallyOrders">0 orders</span>
+    </div>
+    <div class="tally-item">
+      <span class="tally-label">Cash</span>
+      <span class="tally-value" id="tallyCash">₹0</span>
+      <span class="tally-sub" id="tallyCashCount">0 orders</span>
+    </div>
+    <div class="tally-item">
+      <span class="tally-label">UPI / Card</span>
+      <span class="tally-value" id="tallyDigital">₹0</span>
+      <span class="tally-sub" id="tallyDigitalCount">0 orders</span>
+    </div>
+    <div class="tally-item">
+      <span class="tally-label">Pending payment</span>
+      <span class="tally-value" id="tallyPending">₹0</span>
+      <span class="tally-sub" id="tallyPendingCount">0 orders</span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- LEFT: Entry form -->
+    <div class="card">
+      <h2><span class="slice"></span> New Order</h2>
+      <p class="hint">Log a sale as it happens — pick items, set payment, done.</p>
+
+      <label>Customer / table (optional)</label>
+      <input type="text" id="customerName" placeholder="e.g. Riya, or Counter walk-in">
+
+      <label>Menu</label>
+      <div class="menu-grid" id="menuGrid"></div>
+
+      <div class="qty-row" id="qtyRow" style="display:none;">
+        <span style="font-size:12.5px;color:var(--ink-soft);font-weight:600;">Qty for selected item:</span>
+        <button class="qty-btn" id="qtyMinus">−</button>
+        <span class="qty-val" id="qtyVal">1</span>
+        <button class="qty-btn" id="qtyPlus">+</button>
+        <button class="ghost-btn" id="addToCartBtn" style="margin-left:auto;padding:7px 12px;">Add</button>
+      </div>
+
+      <div class="cart" id="cartSection">
+        <div class="cart-empty" id="cartEmpty">No items added yet.</div>
+        <div id="cartLines"></div>
+        <div class="cart-total" id="cartTotalRow" style="display:none;">
+          <span class="lbl">Total</span>
+          <span class="amt" id="cartTotal">₹0</span>
+        </div>
+      </div>
+
+      <label>Payment mode</label>
+      <div class="pay-modes" id="payModes">
+        <button class="pay-btn active" data-mode="Cash">💵 Cash</button>
+        <button class="pay-btn" data-mode="UPI">📱 UPI</button>
+        <button class="pay-btn" data-mode="Card">💳 Card</button>
+      </div>
+
+      <label style="display:flex;align-items:center;gap:8px;margin-top:14px;cursor:pointer;">
+        <input type="checkbox" id="markPending" style="width:auto;">
+        <span style="text-transform:none;font-size:13px;color:var(--ink);font-weight:600;">Mark as pending payment (unpaid for now)</span>
+      </label>
+
+      <button class="submit-btn" id="logOrderBtn">Log Order</button>
+      <div class="error-msg" id="formError"></div>
+
+      <details class="menu-manager">
+        <summary>Edit menu &amp; prices</summary>
+        <div class="menu-manager-body" id="menuManagerBody"></div>
+        <div class="add-item-row">
+          <input type="text" id="newItemName" placeholder="New item name">
+          <input type="number" id="newItemPrice" placeholder="₹ price">
+          <button class="icon-btn" id="addMenuItemBtn">+</button>
+        </div>
+      </details>
+    </div>
+
+    <!-- RIGHT: Ledger -->
+    <div class="card">
+      <div class="ledger-head">
+        <div>
+          <h2><span class="slice"></span> Today's Ledger</h2>
+          <p class="hint" style="margin-bottom:0;">Auto-logged the moment you hit "Log Order."</p>
+        </div>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="All">All</button>
+          <button class="filter-btn" data-filter="Cash">Cash</button>
+          <button class="filter-btn" data-filter="UPI">UPI</button>
+          <button class="filter-btn" data-filter="Card">Card</button>
+          <button class="filter-btn" data-filter="Pending">Pending</button>
+        </div>
+      </div>
+
+      <div class="ledger-list" id="ledgerList"></div>
+
+      <div class="toolbar-bottom">
+        <button class="ghost-btn" id="exportCsvBtn">⬇ Export CSV</button>
+        <button class="ghost-btn danger" id="clearTodayBtn">Clear today's log</button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    Mikado Social Juice <span class="slice"></span> Your data stays on this device (browser local storage) <span class="slice"></span> v1.0
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay hidden" id="setupModal">
+  <div class="modal">
+    <h2>☁️ Connect cloud sync</h2>
+    <p>Link a free Firebase project so orders logged on your phone and laptop
+       stay in sync, with a real database backing this app instead of just
+       this browser's local storage.</p>
+
+    <div class="modal-tab-row">
+      <div class="modal-tab active" data-tab="connect">Connect</div>
+      <div class="modal-tab" data-tab="howto">How to get config</div>
+    </div>
+
+    <div id="tab-connect">
+      <p style="margin-bottom:6px;">Paste your Firebase web config object below (from the Firebase console → Project settings → Your apps):</p>
+      <textarea id="firebaseConfigInput" placeholder='{
+  "apiKey": "...",
+  "authDomain": "...",
+  "projectId": "...",
+  "storageBucket": "...",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+
+      <p style="margin-top:14px;margin-bottom:6px;">Shop PIN (4–8 digits) — set this once, then enter it on every device to access the same data:</p>
+      <input type="text" id="shopPinInput" class="pin-input" placeholder="••••" maxlength="8" inputmode="numeric">
+
+      <div class="modal-actions">
+        <button class="submit-btn" id="connectBtn" style="margin-top:0;">Connect</button>
+        <button class="ghost-btn" id="skipCloudBtn">Keep using local only</button>
+      </div>
+      <div class="error-msg" id="setupError"></div>
+    </div>
+
+    <div id="tab-howto" style="display:none;">
+      <ol>
+        <li>Go to <a class="link" href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a> and click <strong>Add project</strong> (free).</li>
+        <li>Once created, click the <strong>&lt;/&gt; (Web)</strong> icon to register a web app — give it any nickname.</li>
+        <li>Firebase will show a <code>firebaseConfig</code> object. Copy the whole <code>{ ... }</code> block.</li>
+        <li>In the left sidebar go to <strong>Build → Firestore Database → Create database</strong>. Choose <strong>Start in test mode</strong> for now (you can lock it down later).</li>
+        <li>Come back here, paste the config into the box on the <strong>Connect</strong> tab, set a PIN, and hit Connect.</li>
+      </ol>
+      <p style="font-size:12px;">Test mode allows open read/write for 30 days — fine for a single-shop tool, but for stronger security later, ask me and I'll give you locked-down Firestore rules tied to your PIN.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import {
+    getFirestore, collection, doc, setDoc, deleteDoc,
+    onSnapshot, query, orderBy, enableIndexedDbPersistence
+  } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+  window.__mikadoFirebase = { initializeApp, getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy, enableIndexedDbPersistence };
+  window.dispatchEvent(new Event("mikado-firebase-ready"));
+</script>
+<script>
+  function waitForFirebaseModule(){
+    return new Promise(resolve=>{
+      if(window.__mikadoFirebase) return resolve();
+      window.addEventListener("mikado-firebase-ready", ()=>resolve(), {once:true});
+    });
+  }
+</script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Storage helpers ---------------- */
+  const STORAGE_KEY = "mikado_orders_v1";
+  const MENU_KEY = "mikado_menu_v1";
+  const FB_CONFIG_KEY = "mikado_fb_config_v1";
+  const FB_PIN_KEY = "mikado_fb_pin_v1";
+  const todayStr = () => new Date().toISOString().slice(0,10);
+
+  const DEFAULT_MENU = [
+    {name:"Mosambi Mint", price:60},
+    {name:"Watermelon Cooler", price:50},
+    {name:"Pomegranate Punch", price:80},
+    {name:"Pineapple Ginger", price:65},
+    {name:"Beetroot Carrot Apple", price:75},
+    {name:"Mixed Fruit Bowl", price:90},
+    {name:"Roasted Peanut Mix", price:40},
+    {name:"Masala Corn Cup", price:45},
+  ];
+
+  function loadOrdersLocal(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveOrdersLocal(list){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+  function loadMenuLocal(){
+    try{
+      const raw = localStorage.getItem(MENU_KEY);
+      return raw ? JSON.parse(raw) : DEFAULT_MENU.slice();
+    }catch(e){ return DEFAULT_MENU.slice(); }
+  }
+  function saveMenuLocal(list){
+    localStorage.setItem(MENU_KEY, JSON.stringify(list));
+  }
+
+  let orders = loadOrdersLocal();
+  let menu = loadMenuLocal();
+
+  /* ---------------- Cloud sync (Firestore) ---------------- */
+  let cloud = {
+    enabled:false, app:null, db:null, fb:null,
+    pin:null, unsubOrders:null, unsubMenu:null
+  };
+
+  function getFbConfig(){
+    try{
+      const raw = localStorage.getItem(FB_CONFIG_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+  function getShopPin(){
+    return localStorage.getItem(FB_PIN_KEY) || null;
+  }
+
+  function setSyncStatus(state, label){
+    const pill = $("syncPill");
+    pill.classList.remove("online","offline","error");
+    pill.classList.add(state);
+    $("syncLabel").textContent = label;
+  }
+
+  async function tryConnectCloud(silent){
+    const config = getFbConfig();
+    const pin = getShopPin();
+    if(!config || !pin){
+      setSyncStatus("offline", "Local only");
+      return;
+    }
+    try{
+      await waitForFirebaseModule();
+      const fb = window.__mikadoFirebase;
+      cloud.fb = fb;
+      cloud.app = fb.initializeApp(config, "mikado-" + Date.now());
+      cloud.db = fb.getFirestore(cloud.app);
+      cloud.pin = pin;
+      cloud.enabled = true;
+
+      const ordersCol = fb.collection(cloud.db, "shops", pin, "orders");
+      const menuCol = fb.collection(cloud.db, "shops", pin, "menu");
+
+      // live listener: orders
+      cloud.unsubOrders = fb.onSnapshot(ordersCol, (snap)=>{
+        const remote = [];
+        snap.forEach(d => remote.push(d.data()));
+        remote.sort((a,b)=> b.ts - a.ts);
+        orders = remote;
+        saveOrdersLocal(orders);
+        renderLedger();
+        renderTally();
+        setSyncStatus("online", "Synced");
+      }, (err)=>{
+        console.error("orders sync error", err);
+        setSyncStatus("error", "Sync error — tap to fix");
+      });
+
+      // live listener: menu
+      cloud.unsubMenu = fb.onSnapshot(menuCol, (snap)=>{
+        if(snap.empty){
+          // seed cloud with local/default menu on first connect
+          menu.forEach(item => pushMenuItemToCloud(item));
+          return;
+        }
+        const remote = [];
+        snap.forEach(d => remote.push(d.data()));
+        remote.sort((a,b)=> (a.order||0) - (b.order||0));
+        menu = remote.map(r => ({name:r.name, price:r.price}));
+        saveMenuLocal(menu);
+        renderMenuGrid();
+        renderMenuManager();
+      }, (err)=>{
+        console.error("menu sync error", err);
+      });
+
+      if(!silent) showToast("Connected — syncing across devices");
+    }catch(err){
+      console.error("Cloud connect failed", err);
+      setSyncStatus("error", "Connect failed — tap to retry");
+      if(!silent) showToast("Couldn't connect — check your config and try again");
+    }
+  }
+
+  async function pushOrderToCloud(order){
+    if(!cloud.enabled) return;
+    try{
+      const ref = cloud.fb.doc(cloud.db, "shops", cloud.pin, "orders", order.id);
+      await cloud.fb.setDoc(ref, order);
+    }catch(e){
+      console.error("push order failed", e);
+      setSyncStatus("error", "Sync error — tap to fix");
+    }
+  }
+  async function deleteOrderFromCloud(id){
+    if(!cloud.enabled) return;
+    try{
+      const ref = cloud.fb.doc(cloud.db, "shops", cloud.pin, "orders", id);
+      await cloud.fb.deleteDoc(ref);
+    }catch(e){ console.error("delete order failed", e); }
+  }
+  async function pushMenuItemToCloud(item, idx){
+    if(!cloud.enabled) return;
+    try{
+      const id = item.name.replace(/[^a-zA-Z0-9]/g,"_").toLowerCase() || ("item_"+Date.now());
+      const ref = cloud.fb.doc(cloud.db, "shops", cloud.pin, "menu", id);
+      await cloud.fb.setDoc(ref, {name:item.name, price:item.price, order: idx ?? menu.indexOf(item)});
+    }catch(e){ console.error("push menu item failed", e); }
+  }
+  async function pushFullMenuToCloud(){
+    if(!cloud.enabled) return;
+    for(let i=0;i<menu.length;i++){
+      await pushMenuItemToCloud(menu[i], i);
+    }
+  }
+
+  // Unified save functions: write local always, push to cloud if connected
+  function saveOrders(list){
+    saveOrdersLocal(list);
+  }
+  function saveMenu(list){
+    saveMenuLocal(list);
+    pushFullMenuToCloud();
+  }
+
+
+  let cart = []; // {name, price, qty}
+  let selectedMenuIdx = null;
+  let qty = 1;
+  let payMode = "Cash";
+  let activeFilter = "All";
+
+  /* ---------------- DOM refs ---------------- */
+  const $ = (id) => document.getElementById(id);
+  const menuGrid = $("menuGrid");
+  const qtyRow = $("qtyRow");
+  const qtyVal = $("qtyVal");
+  const cartLines = $("cartLines");
+  const cartEmpty = $("cartEmpty");
+  const cartTotalRow = $("cartTotalRow");
+  const cartTotal = $("cartTotal");
+  const formError = $("formError");
+  const ledgerList = $("ledgerList");
+  const toast = $("toast");
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"), 1800);
+  }
+
+  function fmtMoney(n){
+    return "₹" + Number(n).toLocaleString("en-IN", {maximumFractionDigits:0});
+  }
+  function fmtTime(ts){
+    return new Date(ts).toLocaleTimeString("en-IN", {hour:"2-digit", minute:"2-digit"});
+  }
+
+  /* ---------------- Header date ---------------- */
+  $("todayLabel").textContent = new Date().toLocaleDateString("en-IN", {weekday:"short", day:"numeric", month:"short", year:"numeric"});
+
+  /* ---------------- Menu rendering ---------------- */
+  function renderMenuGrid(){
+    menuGrid.innerHTML = "";
+    menu.forEach((item, idx) => {
+      const chip = document.createElement("div");
+      chip.className = "menu-chip" + (selectedMenuIdx === idx ? " active" : "");
+      chip.innerHTML = `<span>${escapeHtml(item.name)}</span><span class="price">${fmtMoney(item.price)}</span>`;
+      chip.addEventListener("click", () => {
+        selectedMenuIdx = idx;
+        qty = 1;
+        qtyVal.textContent = qty;
+        qtyRow.style.display = "flex";
+        renderMenuGrid();
+      });
+      menuGrid.appendChild(chip);
+    });
+  }
+
+  function renderMenuManager(){
+    const body = $("menuManagerBody");
+    body.innerHTML = "";
+    menu.forEach((item, idx) => {
+      const row = document.createElement("div");
+      row.className = "menu-edit-row";
+      row.innerHTML = `
+        <input type="text" value="${escapeHtml(item.name)}" data-idx="${idx}" data-field="name">
+        <input type="number" value="${item.price}" data-idx="${idx}" data-field="price">
+        <button class="icon-btn" data-idx="${idx}" data-action="delete">✕</button>
+      `;
+      body.appendChild(row);
+    });
+    body.querySelectorAll('input[data-field="name"]').forEach(inp=>{
+      inp.addEventListener("change", e=>{
+        const idx = +e.target.dataset.idx;
+        menu[idx].name = e.target.value.trim() || menu[idx].name;
+        saveMenu(menu);
+        renderMenuGrid();
+      });
+    });
+    body.querySelectorAll('input[data-field="price"]').forEach(inp=>{
+      inp.addEventListener("change", e=>{
+        const idx = +e.target.dataset.idx;
+        const val = parseFloat(e.target.value);
+        menu[idx].price = isNaN(val) ? menu[idx].price : val;
+        saveMenu(menu);
+        renderMenuGrid();
+      });
+    });
+    body.querySelectorAll('button[data-action="delete"]').forEach(btn=>{
+      btn.addEventListener("click", e=>{
+        const idx = +e.target.dataset.idx;
+        menu.splice(idx,1);
+        saveMenu(menu);
+        selectedMenuIdx = null;
+        qtyRow.style.display = "none";
+        renderMenuGrid();
+        renderMenuManager();
+      });
+    });
+  }
+
+  $("addMenuItemBtn").addEventListener("click", ()=>{
+    const nameInp = $("newItemName");
+    const priceInp = $("newItemPrice");
+    const name = nameInp.value.trim();
+    const price = parseFloat(priceInp.value);
+    if(!name || isNaN(price) || price < 0){
+      showToast("Enter a valid item name and price");
+      return;
+    }
+    menu.push({name, price});
+    saveMenu(menu);
+    nameInp.value = "";
+    priceInp.value = "";
+    renderMenuGrid();
+    renderMenuManager();
+    showToast("Item added to menu");
+  });
+
+  /* ---------------- Qty controls ---------------- */
+  $("qtyMinus").addEventListener("click", ()=>{
+    qty = Math.max(1, qty - 1);
+    qtyVal.textContent = qty;
+  });
+  $("qtyPlus").addEventListener("click", ()=>{
+    qty = Math.min(99, qty + 1);
+    qtyVal.textContent = qty;
+  });
+
+  $("addToCartBtn").addEventListener("click", ()=>{
+    if(selectedMenuIdx === null) return;
+    const item = menu[selectedMenuIdx];
+    const existing = cart.find(c => c.name === item.name && c.price === item.price);
+    if(existing){
+      existing.qty += qty;
+    } else {
+      cart.push({name:item.name, price:item.price, qty});
+    }
+    selectedMenuIdx = null;
+    qty = 1;
+    qtyVal.textContent = 1;
+    qtyRow.style.display = "none";
+    renderMenuGrid();
+    renderCart();
+    formError.classList.remove("show");
+  });
+
+  /* ---------------- Cart rendering ---------------- */
+  function renderCart(){
+    cartLines.innerHTML = "";
+    if(cart.length === 0){
+      cartEmpty.style.display = "block";
+      cartTotalRow.style.display = "none";
+      return;
+    }
+    cartEmpty.style.display = "none";
+    cartTotalRow.style.display = "flex";
+    let total = 0;
+    cart.forEach((line, idx) => {
+      total += line.price * line.qty;
+      const row = document.createElement("div");
+      row.className = "cart-line";
+      row.innerHTML = `
+        <div>
+          <span class="name">${escapeHtml(line.name)}</span>
+          <span class="meta"> × ${line.qty} · ${fmtMoney(line.price)} each</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="meta">${fmtMoney(line.price * line.qty)}</span>
+          <button class="cart-remove" data-idx="${idx}">remove</button>
+        </div>
+      `;
+      cartLines.appendChild(row);
+    });
+    cartLines.querySelectorAll(".cart-remove").forEach(btn=>{
+      btn.addEventListener("click", e=>{
+        cart.splice(+e.target.dataset.idx, 1);
+        renderCart();
+      });
+    });
+    cartTotal.textContent = fmtMoney(total);
+  }
+
+  /* ---------------- Payment mode toggle ---------------- */
+  document.querySelectorAll("#payModes .pay-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll("#payModes .pay-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      payMode = btn.dataset.mode;
+    });
+  });
+
+  /* ---------------- Log order ---------------- */
+  $("logOrderBtn").addEventListener("click", ()=>{
+    if(cart.length === 0){
+      formError.textContent = "Add at least one item before logging the order.";
+      formError.classList.add("show");
+      return;
+    }
+    formError.classList.remove("show");
+    const total = cart.reduce((s,l)=>s + l.price*l.qty, 0);
+    const isPending = $("markPending").checked;
+    const order = {
+      id: "ORD-" + Date.now().toString(36).toUpperCase(),
+      date: todayStr(),
+      ts: Date.now(),
+      customer: $("customerName").value.trim() || "Walk-in",
+      items: cart.map(c => ({...c})),
+      total,
+      mode: payMode,
+      status: isPending ? "Pending" : "Paid"
+    };
+    orders.unshift(order);
+    saveOrders(orders);
+    pushOrderToCloud(order);
+
+    // reset form
+    cart = [];
+    renderCart();
+    $("customerName").value = "";
+    $("markPending").checked = false;
+
+    renderLedger();
+    renderTally();
+    showToast(`Order logged — ${fmtMoney(total)} (${order.mode}${isPending ? ", pending" : ""})`);
+  });
+
+  /* ---------------- Ledger ---------------- */
+  function todaysOrders(){
+    const t = todayStr();
+    return orders.filter(o => o.date === t);
+  }
+
+  function filteredOrders(){
+    const list = todaysOrders();
+    if(activeFilter === "All") return list;
+    if(activeFilter === "Pending") return list.filter(o => o.status === "Pending");
+    return list.filter(o => o.mode === activeFilter);
+  }
+
+  function renderLedger(){
+    const list = filteredOrders();
+    ledgerList.innerHTML = "";
+    if(list.length === 0){
+      ledgerList.innerHTML = `
+        <div class="empty-state">
+          <div class="slice-big"></div>
+          <p>No orders logged yet for this filter.<br>Log your first sale on the left.</p>
+        </div>`;
+      return;
+    }
+    list.forEach(order => {
+      const card = document.createElement("div");
+      card.className = "order-card";
+      card.dataset.mode = order.mode;
+      const itemsStr = order.items.map(i => `${i.name} ×${i.qty}`).join(", ");
+      card.innerHTML = `
+        <div class="order-top">
+          <div>
+            <div class="order-id">${order.id}</div>
+            <div class="order-customer">${escapeHtml(order.customer)}</div>
+          </div>
+          <div class="order-time">${fmtTime(order.ts)}</div>
+        </div>
+        <div class="order-items">${escapeHtml(itemsStr)}</div>
+        <div class="order-bottom">
+          <div class="order-amt">${fmtMoney(order.total)}</div>
+          <div class="order-tags">
+            <span class="tag mode-${order.mode}">${order.mode}</span>
+            <span class="tag status-${order.status}">${order.status}</span>
+            <div class="order-actions">
+              <button class="icon-btn toggle-pay" title="Toggle paid/pending" data-id="${order.id}" data-action="toggle">✓</button>
+              <button class="icon-btn" title="Delete entry" data-id="${order.id}" data-action="delete">✕</button>
+            </div>
+          </div>
+        </div>
+      `;
+      ledgerList.appendChild(card);
+    });
+
+    ledgerList.querySelectorAll('[data-action="toggle"]').forEach(btn=>{
+      btn.addEventListener("click", e=>{
+        const id = e.currentTarget.dataset.id;
+        const o = orders.find(x=>x.id===id);
+        if(o){
+          o.status = o.status === "Paid" ? "Pending" : "Paid";
+          saveOrders(orders);
+          pushOrderToCloud(o);
+          renderLedger();
+          renderTally();
+        }
+      });
+    });
+    ledgerList.querySelectorAll('[data-action="delete"]').forEach(btn=>{
+      btn.addEventListener("click", e=>{
+        const id = e.currentTarget.dataset.id;
+        orders = orders.filter(x=>x.id!==id);
+        saveOrders(orders);
+        deleteOrderFromCloud(id);
+        renderLedger();
+        renderTally();
+      });
+    });
+  }
+
+  document.querySelectorAll(".filter-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      renderLedger();
+    });
+  });
+
+  /* ---------------- Tally ---------------- */
+  function renderTally(){
+    const list = todaysOrders();
+    const paidList = list.filter(o => o.status === "Paid");
+    const pendingList = list.filter(o => o.status === "Pending");
+    const cashList = paidList.filter(o => o.mode === "Cash");
+    const digitalList = paidList.filter(o => o.mode === "UPI" || o.mode === "Card");
+
+    const revenue = paidList.reduce((s,o)=>s+o.total,0);
+    const cash = cashList.reduce((s,o)=>s+o.total,0);
+    const digital = digitalList.reduce((s,o)=>s+o.total,0);
+    const pending = pendingList.reduce((s,o)=>s+o.total,0);
+
+    $("tallyRevenue").textContent = fmtMoney(revenue);
+    $("tallyOrders").textContent = `${list.length} order${list.length===1?"":"s"}`;
+    $("tallyCash").textContent = fmtMoney(cash);
+    $("tallyCashCount").textContent = `${cashList.length} order${cashList.length===1?"":"s"}`;
+    $("tallyDigital").textContent = fmtMoney(digital);
+    $("tallyDigitalCount").textContent = `${digitalList.length} order${digitalList.length===1?"":"s"}`;
+    $("tallyPending").textContent = fmtMoney(pending);
+    $("tallyPendingCount").textContent = `${pendingList.length} order${pendingList.length===1?"":"s"}`;
+  }
+
+  /* ---------------- Export / Clear ---------------- */
+  $("exportCsvBtn").addEventListener("click", ()=>{
+    const list = todaysOrders();
+    if(list.length === 0){ showToast("No orders to export today"); return; }
+    const rows = [["Order ID","Date","Time","Customer","Items","Total","Payment Mode","Status"]];
+    list.forEach(o=>{
+      rows.push([
+        o.id, o.date, fmtTime(o.ts), o.customer,
+        o.items.map(i=>`${i.name} x${i.qty}`).join("; "),
+        o.total, o.mode, o.status
+      ]);
+    });
+    const csv = rows.map(r => r.map(field => `"${String(field).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], {type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mikado-orders-${todayStr()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("CSV exported");
+  });
+
+  $("clearTodayBtn").addEventListener("click", ()=>{
+    const list = todaysOrders();
+    if(list.length === 0){ showToast("Nothing to clear"); return; }
+    if(!confirm(`Delete all ${list.length} order(s) logged today? This can't be undone.`)) return;
+    const t = todayStr();
+    orders = orders.filter(o => o.date !== t);
+    saveOrders(orders);
+    list.forEach(o => deleteOrderFromCloud(o.id));
+    renderLedger();
+    renderTally();
+    showToast("Today's log cleared");
+  });
+
+  function escapeHtml(str){
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ---------------- Setup modal wiring ---------------- */
+  const setupModal = $("setupModal");
+  function openSetupModal(){ setupModal.classList.remove("hidden"); }
+  function closeSetupModal(){ setupModal.classList.add("hidden"); }
+
+  $("syncPill").addEventListener("click", openSetupModal);
+
+  document.querySelectorAll(".modal-tab").forEach(tab=>{
+    tab.addEventListener("click", ()=>{
+      document.querySelectorAll(".modal-tab").forEach(t=>t.classList.remove("active"));
+      tab.classList.add("active");
+      const target = tab.dataset.tab;
+      $("tab-connect").style.display = target === "connect" ? "block" : "none";
+      $("tab-howto").style.display = target === "howto" ? "block" : "none";
+    });
+  });
+
+  $("skipCloudBtn").addEventListener("click", closeSetupModal);
+
+  $("connectBtn").addEventListener("click", async ()=>{
+    const errEl = $("setupError");
+    errEl.classList.remove("show");
+    const raw = $("firebaseConfigInput").value.trim();
+    const pin = $("shopPinInput").value.trim();
+
+    if(!pin || pin.length < 4 || !/^[0-9]+$/.test(pin)){
+      errEl.textContent = "Enter a PIN of 4-8 digits — this keeps your shop's data separate from anyone else using this same app.";
+      errEl.classList.add("show");
+      return;
+    }
+    let config;
+    try{
+      config = JSON.parse(raw);
+      if(!config.apiKey || !config.projectId) throw new Error("missing fields");
+    }catch(e){
+      errEl.textContent = "That doesn't look like a valid Firebase config — paste the full { ... } object from the Firebase console.";
+      errEl.classList.add("show");
+      return;
+    }
+
+    localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(config));
+    localStorage.setItem(FB_PIN_KEY, pin);
+    closeSetupModal();
+    setSyncStatus("offline", "Connecting…");
+    await tryConnectCloud(false);
+  });
+
+  /* ---------------- Init ---------------- */
+  renderMenuGrid();
+  renderMenuManager();
+  renderCart();
+  renderLedger();
+  renderTally();
+  tryConnectCloud(true); // auto-connect silently if already configured on this device
+
+})();
+</script>
+</body>
+</html>
