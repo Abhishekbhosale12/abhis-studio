@@ -1203,10 +1203,24 @@
     }
     let config;
     try{
-      config = JSON.parse(raw);
+      // Sanitise: replace smart/curly quotes with straight quotes
+      let cleaned = raw
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/[\u201C\u201D]/g, '"')
+        .trim();
+
+      // Remove surrounding variable assignment if copied with it
+      // e.g. "const firebaseConfig = { ... };" or "var x = { ... }"
+      cleaned = cleaned.replace(/^(const|let|var)\s+\w+\s*=\s*/, '').replace(/;?\s*$/, '').trim();
+
+      // If keys are unquoted JS object style, convert to JSON
+      // e.g.  apiKey: "value"  →  "apiKey": "value"
+      cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+
+      config = JSON.parse(cleaned);
       if(!config.apiKey || !config.projectId) throw new Error("missing fields");
     }catch(e){
-      errEl.textContent = "That doesn't look like a valid Firebase config — paste the full { ... } object from the Firebase console.";
+      errEl.textContent = "Couldn't read the config — make sure you copied the full { ... } block from Firebase Project settings → Your apps → Config.";
       errEl.classList.add("show");
       return;
     }
