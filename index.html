@@ -575,17 +575,27 @@
     </div>
 
     <div id="tab-connect">
-      <p style="margin-bottom:6px;">Paste your Firebase web config object below (from the Firebase console → Project settings → Your apps):</p>
-      <textarea id="firebaseConfigInput" placeholder='{
-  "apiKey": "...",
-  "authDomain": "...",
-  "projectId": "...",
-  "storageBucket": "...",
-  "messagingSenderId": "...",
-  "appId": "..."
-}'></textarea>
+      <p style="margin-bottom:12px;font-size:13px;">Fill in each value from Firebase console → Project settings → Your apps → Config:</p>
 
-      <p style="margin-top:14px;margin-bottom:6px;">Shop PIN (4–8 digits) — set this once, then enter it on every device to access the same data:</p>
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);display:block;margin-bottom:4px;">API Key</label>
+      <input type="text" id="fb_apiKey" placeholder="AIzaSy..." autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:10px;">
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);display:block;margin-bottom:4px;">Project ID</label>
+      <input type="text" id="fb_projectId" placeholder="mikado-d3190" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:10px;">
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);display:block;margin-bottom:4px;">Auth Domain</label>
+      <input type="text" id="fb_authDomain" placeholder="mikado-d3190.firebaseapp.com" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:10px;">
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);display:block;margin-bottom:4px;">App ID</label>
+      <input type="text" id="fb_appId" placeholder="1:24239583245:web:abc..." autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:10px;">
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);display:block;margin-bottom:4px;">Messaging Sender ID</label>
+      <input type="text" id="fb_messagingSenderId" placeholder="24239583245" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="numeric" style="margin-bottom:10px;">
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);display:block;margin-bottom:4px;">Storage Bucket</label>
+      <input type="text" id="fb_storageBucket" placeholder="mikado-d3190.firebasestorage.app" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:16px;">
+
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);display:block;margin-bottom:4px;">Shop PIN (4–8 digits — same on every device)</label>
       <input type="text" id="shopPinInput" class="pin-input" placeholder="••••" maxlength="8" inputmode="numeric">
 
       <div class="modal-actions">
@@ -1193,34 +1203,29 @@
   $("connectBtn").addEventListener("click", async ()=>{
     const errEl = $("setupError");
     errEl.classList.remove("show");
-    const raw = $("firebaseConfigInput").value.trim();
-    const pin = $("shopPinInput").value.trim();
 
+    const pin = $("shopPinInput").value.trim();
     if(!pin || pin.length < 4 || !/^[0-9]+$/.test(pin)){
-      errEl.textContent = "Enter a PIN of 4-8 digits — this keeps your shop's data separate from anyone else using this same app.";
+      errEl.textContent = "Enter a PIN of 4–8 digits.";
       errEl.classList.add("show");
       return;
     }
-    let config;
-    try{
-      // Sanitise: replace smart/curly quotes with straight quotes
-      let cleaned = raw
-        .replace(/[\u2018\u2019]/g, "'")
-        .replace(/[\u201C\u201D]/g, '"')
-        .trim();
 
-      // Remove surrounding variable assignment if copied with it
-      // e.g. "const firebaseConfig = { ... };" or "var x = { ... }"
-      cleaned = cleaned.replace(/^(const|let|var)\s+\w+\s*=\s*/, '').replace(/;?\s*$/, '').trim();
+    const clean = s => (s||"").trim()
+      .replace(/[\u2018\u2019\u201C\u201D]/g, '"')
+      .replace(/^["']|["']$/g, '');
 
-      // If keys are unquoted JS object style, convert to JSON
-      // e.g.  apiKey: "value"  →  "apiKey": "value"
-      cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+    const config = {
+      apiKey:            clean($("fb_apiKey").value),
+      projectId:         clean($("fb_projectId").value),
+      authDomain:        clean($("fb_authDomain").value),
+      appId:             clean($("fb_appId").value),
+      messagingSenderId: clean($("fb_messagingSenderId").value),
+      storageBucket:     clean($("fb_storageBucket").value),
+    };
 
-      config = JSON.parse(cleaned);
-      if(!config.apiKey || !config.projectId) throw new Error("missing fields");
-    }catch(e){
-      errEl.textContent = "Couldn't read the config — make sure you copied the full { ... } block from Firebase Project settings → Your apps → Config.";
+    if(!config.apiKey || !config.projectId || !config.authDomain || !config.appId){
+      errEl.textContent = "Please fill in at least: API Key, Project ID, Auth Domain, and App ID.";
       errEl.classList.add("show");
       return;
     }
