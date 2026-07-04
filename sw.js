@@ -1,10 +1,10 @@
 const CACHE = "mikado-v1";
 const ASSETS = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png"
+  "/abhis-studio/",
+  "/abhis-studio/index.html",
+  "/abhis-studio/manifest.json",
+  "/abhis-studio/icon-192.png",
+  "/abhis-studio/icon-512.png"
 ];
 
 self.addEventListener("install", e => {
@@ -20,9 +20,8 @@ self.addEventListener("activate", e => {
 });
 
 self.addEventListener("fetch", e => {
-  // Network first for Firebase/API calls, cache first for app shell
-  if (e.request.url.includes("firestore") || e.request.url.includes("googleapis")) {
-    return; // let Firebase handle its own requests
+  if (e.request.url.includes("firestore") || e.request.url.includes("googleapis") || e.request.url.includes("gstatic")) {
+    return;
   }
   e.respondWith(
     fetch(e.request)
