@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mikado Social Juice — Order Tracker</title>
+<title>Mikado Social — Order Tracker</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#D4F000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mikado Social">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,9 +20,9 @@
   --surface2:#182018;
   --border:#1E2B1E;
   --border2:#253525;
-  --green:#22C55E;
-  --green-dim:#16A34A;
-  --green-glow:rgba(34,197,94,0.15);
+  --green:#D4F000;
+  --green-dim:#AACB00;
+  --green-glow:rgba(212,240,0,0.12);
   --red:#EF4444;
   --red-dim:#DC2626;
   --red-glow:rgba(239,68,68,0.12);
@@ -38,7 +44,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
 .nav-right{display:flex;align-items:center;gap:10px;}
 .nav-tabs{display:flex;gap:4px;background:var(--surface2);border-radius:10px;padding:4px;border:1px solid var(--border);}
 .nav-tab{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);border:none;background:none;transition:all .15s;}
-.nav-tab.active{background:var(--green);color:#0A0F0A;}
+.nav-tab.active{background:var(--green);color:#0A0F0A;font-weight:800;}
 .sync-pill{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:6px 12px;font-size:11.5px;font-family:'JetBrains Mono',monospace;color:var(--text2);cursor:pointer;}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex:none;}
 .sync-pill.online .sync-dot{background:var(--green);box-shadow:0 0 8px var(--green);}
@@ -248,9 +254,9 @@ input::placeholder{color:var(--text3);}
 <!-- NAV -->
 <nav class="nav">
   <div class="nav-brand">
-    <div class="nav-logo">M</div>
+    <img src="data:image/png;base64,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" alt="Mikado Social" style="width:44px;height:44px;border-radius:10px;object-fit:cover;">
     <div>
-      <div class="nav-title">Mikado Social Juice</div>
+      <div class="nav-title">MIKADO <span style="color:#D4F000;">SOCIAL</span></div>
       <div class="nav-sub" id="todayLabel"></div>
     </div>
   </div>
@@ -354,9 +360,6 @@ input::placeholder{color:var(--text3);}
     <div class="card">
       <div class="card-title">🧃 New Order</div>
       <div class="card-sub">Log a sale as it happens</div>
-
-      <label>Customer / Table (optional)</label>
-      <input type="text" id="customerName" placeholder="e.g. Riya, Table 3, Walk-in">
 
       <label>Select Items</label>
       <div class="menu-grid" id="menuGrid"></div>
@@ -729,13 +732,13 @@ $("logOrderBtn").addEventListener("click",()=>{
   const order={
     id:"ORD-"+Date.now().toString(36).toUpperCase(),
     date:todayStr(), ts:Date.now(),
-    customer:$("customerName").value.trim()||"Walk-in",
+    customer:"Walk-in",
     items:cart.map(c=>({...c})),
     total, mode:payMode,
     status:isPending?"Pending":"Paid"
   };
   orders.unshift(order); saveOrdersLocal(orders); pushOrder(order);
-  cart=[]; renderCart(); $("customerName").value=""; $("markPending").checked=false;
+  cart=[]; renderCart(); $("markPending").checked=false;
   renderAll();
   showToast(`Logged — ${fmtMoney(total)} · ${order.mode}${isPending?" · Pending":""}`);
 });
@@ -1011,6 +1014,15 @@ if(savedPin){ setSyncStatus("offline","Connecting…"); connectCloud(savedPin,tr
 else setSyncStatus("offline","Local only");
 
 })();
+</script>
+<script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => console.log("SW registered"))
+      .catch(e => console.log("SW failed:", e));
+  });
+}
 </script>
 </body>
 </html>
